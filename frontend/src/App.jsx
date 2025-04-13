@@ -1,89 +1,120 @@
-import React, { useEffect, useState } from "react";
-import CryptoJS from "crypto-js";
+import React, { useState, useEffect } from "react";
+import Web3 from "web3";
 import { getContract, getAccounts } from "./contract";
 
+import './App.css';
+
 function App() {
-  const [account, setAccount] = useState("");
-  const [contract, setContract] = useState(null);
   const [message, setMessage] = useState("");
-  const [encrypted, setEncrypted] = useState("");
-  const [decrypted, setDecrypted] = useState("");
-  const [phase, setPhase] = useState("input"); // input | waiting | revealed
-  const [timer, setTimer] = useState(10);
+  const [encryptedMessage, setEncryptedMessage] = useState("");
+  const [decryptedMessage, setDecryptedMessage] = useState("");
+  const [countdown, setCountdown] = useState(10);
+  const [isMessageSent, setIsMessageSent] = useState(false);
+  const [isMessageDecrypted, setIsMessageDecrypted] = useState(false);
+  const [balls, setBalls] = useState([]);
 
+  // Cuando se guarda el mensaje, se activa la cuenta atrás
   useEffect(() => {
-    const init = async () => {
-      const accs = await getAccounts();
-      const c = await getContract();
-      setAccount(accs[0]);
-      setContract(c);
-      console.log("Cuenta:", accs[0]);
-    };
-    init();
-  }, []);
-
-  const handleSave = async () => {
-    const encryptedMsg = CryptoJS.AES.encrypt(message, "claveSecreta").toString();
-    setEncrypted(encryptedMsg);
-    setPhase("waiting");
-
-    try {
-      await contract.methods.createMessage(encryptedMsg).send({
-        from: account,
-        gas: 300000 // 💥 Aquí se fija el gas manualmente
-      });
-
-      let time = 10;
-      const interval = setInterval(() => {
-        time -= 1;
-        setTimer(time);
-        if (time <= 0) {
-          clearInterval(interval);
-          const decryptedBytes = CryptoJS.AES.decrypt(encryptedMsg, "claveSecreta");
-          const decryptedMsg = decryptedBytes.toString(CryptoJS.enc.Utf8);
-          setDecrypted(decryptedMsg);
-          setPhase("revealed");
-        }
+    if (isMessageSent) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            setIsMessageDecrypted(true); // Al acabar la cuenta atrás, desbloquear el mensaje
+            handleDecryptMessage(); // Desencriptar el mensaje
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } catch (err) {
-      console.error("❌ Error al guardar:", err);
+
+      return () => clearInterval(timer);
+    }
+  }, [isMessageSent]);
+
+  // Generar bolas aleatorias en la pantalla
+  const generateBall = () => {
+    const newBall = {
+      id: Math.random(),
+      left: Math.floor(Math.random() * 100),
+      top: Math.floor(Math.random() * 100),
+      size: Math.floor(Math.random() * 30 + 20) // Random size between 20 and 50
+    };
+    setBalls((prevBalls) => [...prevBalls, newBall]);
+  };
+
+  // Guardar mensaje y encriptarlo
+  const handleSaveMessage = async () => {
+    const encrypted = btoa(message); // Simple encoding for illustration
+    setEncryptedMessage(encrypted);
+    setIsMessageSent(true);
+
+    // Generar bolas dinámicamente
+    for (let i = 0; i < 10; i++) {
+      setTimeout(generateBall, i * 500); // Delay between balls
+    }
+
+    // Aquí iría tu código para enviar el mensaje al contrato
+  };
+
+  // Desencriptar el mensaje (simple decodificación)
+  const handleDecryptMessage = () => {
+    if (encryptedMessage) {
+      const decrypted = atob(encryptedMessage); // Simple decoding
+      setDecryptedMessage(decrypted);
     }
   };
 
   return (
-    <div style={{ padding: "2rem", textAlign: "center", fontFamily: "sans-serif" }}>
-      <h1>📦 Time Capsule</h1>
+    <div className="app">
+      <div className="container">
+        <h1 className="title">Cápsula del Tiempo</h1>
+        {!isMessageSent ? (
+          <div>
+            <input
+              type="text"
+              className="input-message"
+              placeholder="Escribe tu mensaje"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button className="btn-save" onClick={handleSaveMessage}>
+              Guardar Mensaje
+            </button>
+          </div>
+        ) : (
+          <div>
+            {!isMessageDecrypted ? (
+              <div>
+                <div className="encrypted-msg">
+                  <p>Mensaje Cifrado: {encryptedMessage}</p>
+                </div>
+                <div className="countdown">
+                  <p>Tiempo Restante: <span className="timer">{countdown}</span> segundos</p>
+                </div>
+              </div>
+            ) : (
+              <div className="decrypted-msg">
+                <p>¡Tu mensaje se ha desbloqueado!</p>
+                <p>{decryptedMessage}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
-      {phase === "input" && (
-        <>
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Escribe tu mensaje secreto..."
-            style={{ width: "300px", padding: "0.5rem", marginBottom: "1rem" }}
-          />
-          <br />
-          <button onClick={handleSave} style={{ padding: "0.5rem 1rem" }}>
-            Guardar mensaje
-          </button>
-        </>
-      )}
-
-      {phase === "waiting" && (
-        <>
-          <p>🔐 Mensaje encriptado:</p>
-          <p style={{ wordBreak: "break-all", fontSize: "0.85rem" }}>{encrypted}</p>
-          <p>⏳ Esperando {timer} segundos para desbloquear...</p>
-        </>
-      )}
-
-      {phase === "revealed" && (
-        <>
-          <h2>🔓 Tu mensaje:</h2>
-          <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{decrypted}</p>
-          <p>✅ Se ha desbloqueado tu mensaje</p>
-        </>
-      )}
+      {balls.map((ball) => (
+        <div
+          key={ball.id}
+          className="ball"
+          style={{
+            left: `${ball.left}%`,
+            top: `${ball.top}%`,
+            width: `${ball.size}px`,
+            height: `${ball.size}px`,
+          }}
+        />
+      ))}
     </div>
   );
 }
