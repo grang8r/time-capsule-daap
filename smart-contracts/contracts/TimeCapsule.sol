@@ -1,32 +1,30 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.21;
 
 contract TimeCapsule {
     struct Message {
         address sender;
         string content;
-        uint unlockTime;
+        uint256 unlockTime;
     }
 
     Message[] public messages;
 
-    event MessageCreated(address indexed sender, uint unlockTime);
+    event MessageCreated(address indexed sender, uint256 unlockTime);
 
-    function createMessage(string memory _content, uint _secondsFromNow) public {
-        require(_secondsFromNow > 0, "El tiempo debe ser en el futuro");
-        uint unlockTime = block.timestamp + _secondsFromNow;
-        messages.push(Message(msg.sender, _content, unlockTime));
+    function createMessage(string memory _encryptedContent) public {
+        uint256 unlockTime = block.timestamp + 10;
+        messages.push(Message(msg.sender, _encryptedContent, unlockTime));
         emit MessageCreated(msg.sender, unlockTime);
     }
 
-    function getMessage(uint _index) public view returns (string memory content, uint unlockTime) {
-        require(_index < messages.length, "Mensaje no existe");
-        Message memory m = messages[_index];
-        require(block.timestamp >= m.unlockTime, "Todavia no puedes ver este mensaje");
-        return (m.content, m.unlockTime);
+    function getMessage(uint256 _index) public view returns (string memory content, uint256 unlockTime) {
+        require(_index < messages.length, "Index out of bounds");
+        return (messages[_index].content, messages[_index].unlockTime);
     }
 
-    function getMessagesCount() public view returns (uint) {
+    function getMessagesCount() public view returns (uint256) {
         return messages.length;
     }
 }
+
