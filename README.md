@@ -12,7 +12,7 @@ Git (para control de versiones)
 
 **Instalación y Configuración**
 1. Clona el repositorio:
-git clone https://github.com/tuusuario/capsula-tiempo.git
+git clone (https://github.com/grang8r/time-capsule-daap)
 cd capsula-tiempo
 2. Instala las dependencias del frontend (Angular):
 cd frontend
