@@ -1,0 +1,85 @@
+# 📄 Documento de Requisitos Mínimos  
+ Cápsula del Tiempo DApp  
+**Tecnologías principales:** Angular, Truffle, Ganache, Solidity, Web3.js, CryptoJS  
+
+---
+
+## 🔹 1. Objetivo General
+
+Crear una aplicación descentralizada (DApp) que permita a los usuarios introducir un mensaje de texto, encriptarlo, almacenarlo en la blockchain y, tras un tiempo determinado (10 segundos), desencriptarlo automáticamente para su visualización.
+
+---
+
+## 🔹 2. Requisitos Funcionales
+
+### 2.1 Frontend
+- Mostrar una pantalla inicial con:
+  - Un logo en el centro.
+  - Un campo de texto para escribir el mensaje.
+  - Un botón para guardar el mensaje.
+
+- Al pulsar el botón:
+  - El mensaje se encripta usando AES u otro algoritmo simétrico (CryptoJS).
+  - El mensaje encriptado se almacena en la blockchain mediante un contrato inteligente.
+  - Se cambia la vista a una pantalla con:
+    - El logo centrado.
+    - El mensaje encriptado visible.
+    - Una cuenta regresiva de 10 segundos.
+
+- Tras los 10 segundos:
+  - Se limpia la pantalla.
+  - Se muestra:
+    - El logo centrado.
+    - El mensaje desencriptado.
+    - Un texto: “Tu mensaje ha sido desbloqueado”.
+
+### 2.2 Backend (Smart Contract)
+- Desarrollar un contrato inteligente en Solidity que:
+  - Almacene mensajes encriptados.
+  - Permita consultarlos desde el frontend.
+  - Incluya un identificador (ID o address) para relacionar mensajes con usuarios o sesiones si es necesario.
+
+### 2.3 Blockchain
+- Usar Ganache como red local de desarrollo.
+- Implementar y desplegar el contrato inteligente mediante Truffle.
+- Conectar el frontend con la blockchain usando Web3.js.
+
+---
+
+## 🔹 3. Requisitos No Funcionales
+
+- El código debe estar versionado en GitHub (incluyendo frontend y smart contracts).
+- La interfaz debe ser minimalista y centrada en la experiencia del usuario.
+- El tiempo de espera (10 segundos) debe gestionarse en el frontend, no en la blockchain.
+- El sistema debe mostrar mensajes de error si falla la conexión con la red o el contrato.
+- Todo el contenido debe ser en español.
+
+---
+
+## 🔹 4. Requisitos Técnicos
+
+| Área | Herramienta / Tecnología |
+|------|---------------------------|
+| **Frontend** | Angular (CLI v19+), HTML, CSS |
+| **Blockchain** | Solidity, Truffle, Ganache |
+| **Conexión** | Web3.js |
+| **Criptografía** | CryptoJS |
+| **Control de versiones** | Git, GitHub |
+| **Navegador soportado** | Google Chrome (última versión) |
+
+---
+
+## 🔹 5. Consideraciones de Seguridad
+
+- No almacenar claves privadas ni secretos en el frontend.
+- Asegurar que los datos sean encriptados antes de ser enviados a la blockchain.
+- Utilizar librerías conocidas y mantenidas (Web3.js, CryptoJS).
+
+---
+
+## 🔹 6. Pendientes / Posibles Mejoras Futuras
+
+- Permitir al usuario definir su propio tiempo de desbloqueo.
+- Permitir al usuario definir una clave de encriptación propia.
+- Guardar el hash del mensaje para comprobar integridad.
+- Crear un historial de mensajes enviados.
